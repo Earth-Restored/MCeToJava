@@ -23,7 +23,7 @@ internal static class JsonNbtConverter
 
 	public static NbtList Convert(ListJsonNbtTag tag)
 	{
-		if (tag.Value.Count == 0)
+		if (tag is null or { Value: null or { Count: 0 } })
 		{
 			return new NbtList(NbtType.BYTE, []);
 		}
