@@ -14,5 +14,5 @@ internal static class ChunkUtils
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int2 BlockToChunk(int blockX, int blockZ)
-	=> new int2(blockX >> 4, blockZ >> 4);
+		=> new int2(blockX >> 4, blockZ >> 4);
 }

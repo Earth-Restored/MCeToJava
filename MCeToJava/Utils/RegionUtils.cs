@@ -112,6 +112,8 @@ internal static class RegionUtils
 				throw new InvalidDataException($"Invalid/unknown compression type '{compressionType}'.");
 		}
 
+		uncompressed.Position = 0;
+
 		return uncompressed;
 	}
 

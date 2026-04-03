@@ -25,9 +25,9 @@ internal static class JavaBlocks
 		{
 			JsonObject obj = item!.AsObject();
 			int id = obj["id"]!.GetValue<int>();
-			string nameAndSate = obj["name"]!.GetValue<string>();
+			string nameAndState = obj["name"]!.GetValue<string>();
 
-			if (!JavaIdToNameAndState.TryAdd(id, nameAndSate))
+			if (!JavaIdToNameAndState.TryAdd(id, nameAndState))
 			{
 				Log.Warning($"[registry] Duplicate Java block ID {id}");
 			}
@@ -41,14 +41,14 @@ internal static class JavaBlocks
 					continue;
 				}
 
-				BedrockIdToNameAndState.TryAdd(bedrockMapping.Id, nameAndSate);
+				BedrockIdToNameAndState.TryAdd(bedrockMapping.Id, nameAndState);
 				BedrockIdToBedrockMapping.TryAdd(bedrockMapping.Id, bedrockMapping);
-				int bracketIndex = nameAndSate.IndexOf('[');
-				NameToDefaultNameAndState.TryAdd(bracketIndex == -1 ? nameAndSate : nameAndSate[..bracketIndex], nameAndSate);
+				int bracketIndex = nameAndState.IndexOf('[');
+				NameToDefaultNameAndState.TryAdd(bracketIndex == -1 ? nameAndState : nameAndState[..bracketIndex], nameAndState);
 			}
 			catch (BedrockMappingFailException ex)
 			{
-				Log.Warning($"[registry] Cannot find Bedrock block for Java block {nameAndSate}: {ex}");
+				Log.Warning($"[registry] Cannot find Bedrock block for Java block {nameAndState}: {ex}");
 			}
 		}
 
@@ -79,8 +79,10 @@ internal static class JavaBlocks
 						continue;
 					}
 
-					BedrockIdToNameAndState.TryAdd(bedrockMapping.Id, baseName);
+					BedrockIdToNameAndState.TryAdd(bedrockMapping.Id, name);
 					BedrockIdToBedrockMapping.TryAdd(bedrockMapping.Id, bedrockMapping);
+					int bracketIndex = name.IndexOf('[');
+					NameToDefaultNameAndState.TryAdd(bracketIndex == -1 ? name : name[..bracketIndex], name);
 				}
 				catch (BedrockMappingFailException ex)
 				{
@@ -142,7 +144,7 @@ internal static class JavaBlocks
 		int id = BedrockBlocks.GetId(name, state);
 		if (id == -1)
 		{
-			throw new BedrockMappingFailException("Cannot find Bedrock block with provided name and state.StyleCop.Analyzers");
+			throw new BedrockMappingFailException("Cannot find Bedrock block with provided name and state");
 		}
 
 		bool waterlogged = bedrockMappingObject.ContainsKey("waterlogged") && bedrockMappingObject["waterlogged"]!.GetValue<bool>();

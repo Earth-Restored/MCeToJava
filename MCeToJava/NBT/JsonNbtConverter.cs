@@ -44,6 +44,7 @@ internal static class JsonNbtConverter
 			ListJsonNbtTag list => Convert(list),
 			IntJsonNbtTag i => i.Value,
 			ByteJsonNbtTag b => b.Value,
+			ShortJsonNbtTag si => si.Value,
 			FloatJsonNbtTag f => f.Value,
 			StringJsonNbtTag s => s.Value,
 			_ => throw new UnsupportedOperationException($"Cannot convert tag of type '{tag.GetType().Name}'."),
@@ -54,6 +55,7 @@ internal static class JsonNbtConverter
 	[JsonDerivedType(typeof(ListJsonNbtTag), "list")]
 	[JsonDerivedType(typeof(IntJsonNbtTag), "int")]
 	[JsonDerivedType(typeof(ByteJsonNbtTag), "byte")]
+	[JsonDerivedType(typeof(ShortJsonNbtTag), "short")]
 	[JsonDerivedType(typeof(FloatJsonNbtTag), "float")]
 	[JsonDerivedType(typeof(StringJsonNbtTag), "string")]
 	public abstract class JsonNbtTag
@@ -74,6 +76,8 @@ internal static class JsonNbtConverter
 			INT,
 			[EnumMember(Value = "byte")]
 			BYTE,
+			[EnumMember(Value = "short")]
+			SHORT,
 			[EnumMember(Value = "float")]
 			FLOAT,
 			[EnumMember(Value = "string")]
@@ -121,6 +125,16 @@ internal static class JsonNbtConverter
 		}
 
 		public required byte Value { get; init; }
+	}
+
+	public sealed class ShortJsonNbtTag : JsonNbtTag
+	{
+		public ShortJsonNbtTag()
+			: base(TagType.SHORT)
+		{
+		}
+
+		public required short Value { get; init; }
 	}
 
 	public sealed class FloatJsonNbtTag : JsonNbtTag
