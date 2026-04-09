@@ -2,7 +2,7 @@
 // Copyright (c) BitcoderCZ. All rights reserved.
 // </copyright>
 
-using MathUtils.Vectors;
+using BitcoderCZ.Maths.Vectors;
 using MCeToJava.Utils;
 using SharpNBT;
 using System.Diagnostics;
@@ -12,10 +12,19 @@ using System.Runtime.InteropServices;
 
 namespace MCeToJava;
 
-internal sealed class WorldData
+/// <summary>
+/// Data for a java world.
+/// </summary>
+public sealed class WorldData
 {
+	/// <summary>
+	/// File in the world.
+	/// </summary>
 	public readonly Dictionary<string, byte[]> Files = [];
 
+	/// <summary>
+	/// Lock for <see cref="Files"/>.
+	/// </summary>
 	public readonly
 #if NET9_0_OR_GREATER
 		Lock
@@ -24,10 +33,17 @@ internal sealed class WorldData
 #endif
 		FilesLock = new();
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="WorldData"/> class.
+	/// </summary>
 	public WorldData()
 	{
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="WorldData"/> class.
+	/// </summary>
+	/// <param name="inputStream">The zip stream.</param>
 	public WorldData(Stream inputStream)
 	{
 		using ZipArchive archive = new ZipArchive(inputStream);

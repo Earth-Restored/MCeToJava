@@ -2,7 +2,7 @@
 // Copyright (c) BitcoderCZ. All rights reserved.
 // </copyright>
 
-using MathUtils.Vectors;
+using BitcoderCZ.Maths.Vectors;
 using MCeToJava.Models.MCE;
 using MCeToJava.Models.Vienna;
 using MCeToJava.Utils;
@@ -11,7 +11,7 @@ using System.Text;
 
 namespace MCeToJava;
 
-internal static partial class Converter
+public static partial class Converter
 {
 	private static class Vienna
 	{

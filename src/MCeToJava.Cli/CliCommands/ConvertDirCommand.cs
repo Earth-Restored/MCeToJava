@@ -8,7 +8,7 @@ using MCeToJava.Models;
 using Serilog;
 using Serilog.Core;
 
-namespace MCeToJava.CliCommands;
+namespace MCeToJava.Cli.CliCommands;
 
 [CommandName("convert-dir")]
 [HelpText("Converts all Project Earth (Minecraft Earth) buildplates in a directory to a Java worlds.")]

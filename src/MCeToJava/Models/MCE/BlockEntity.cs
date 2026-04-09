@@ -2,7 +2,7 @@
 // Copyright (c) BitcoderCZ. All rights reserved.
 // </copyright>
 
-using MathUtils.Vectors;
+using BitcoderCZ.Maths.Vectors;
 using MCeToJava.NBT;
 
 namespace MCeToJava.Models.MCE;

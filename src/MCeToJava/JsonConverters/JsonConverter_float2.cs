@@ -2,9 +2,9 @@
 // Copyright (c) BitcoderCZ. All rights reserved.
 // </copyright>
 
-using MathUtils.Vectors;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BitcoderCZ.Maths.Vectors;
 
 namespace MCeToJava.JsonConverters;
 

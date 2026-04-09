@@ -10,7 +10,7 @@ using MCeToJava.Exceptions;
 using MCeToJava.Models;
 using Serilog;
 
-namespace MCeToJava.CliCommands;
+namespace MCeToJava.Cli.CliCommands;
 
 [CommandName("convert")]
 [HelpText("Converts a Project Earth (Minecraft Earth) buildplate to a Java world.")]

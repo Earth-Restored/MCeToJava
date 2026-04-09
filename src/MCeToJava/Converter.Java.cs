@@ -9,7 +9,7 @@ using System.IO.Compression;
 
 namespace MCeToJava;
 
-internal static partial class Converter
+public static partial class Converter
 {
 	private static class Java
 	{

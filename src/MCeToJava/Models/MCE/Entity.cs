@@ -2,8 +2,8 @@
 // Copyright (c) BitcoderCZ. All rights reserved.
 // </copyright>
 
-using MathUtils.Vectors;
 using System.Text.Json.Nodes;
+using BitcoderCZ.Maths.Vectors;
 
 namespace MCeToJava.Models.MCE;
 

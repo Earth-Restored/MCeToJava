@@ -2,8 +2,8 @@
 // Copyright (c) BitcoderCZ. All rights reserved.
 // </copyright>
 
+using BitcoderCZ.Maths.Vectors;
 using FluentResults;
-using MathUtils.Vectors;
 using MCeToJava.Exceptions;
 using MCeToJava.Models;
 using MCeToJava.Models.MCE;
@@ -25,7 +25,7 @@ using System.Text.RegularExpressions;
 
 namespace MCeToJava;
 
-internal static partial class Converter
+public static partial class Converter
 {
 	// Read file
 	// Parse buildplate json

@@ -3,11 +3,11 @@
 // </copyright>
 
 using CommandLineParser;
-using MCeToJava.CliCommands;
+using MCeToJava.Cli.CliCommands;
 using Serilog;
 using System.Diagnostics;
 
-namespace MCeToJava;
+namespace MCeToJava.Cli;
 
 internal class Program
 {
