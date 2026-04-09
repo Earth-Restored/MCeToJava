@@ -153,7 +153,7 @@ internal static class RegionUtils
 		regionData[(int)index + 4] = compressionType;
 
 		chunkData.Position = 0;
-		chunkData.Read(regionData.Slice((int)index + 5, (int)dataLength));
+		chunkData.ReadExactly(regionData.Slice((int)index + 5, (int)dataLength));
 	}
 
 	public static void WriteChunkNBT(ref byte[] regionData, CompoundTag chunkNBT, int localX, int localZ)

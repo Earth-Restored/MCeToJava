@@ -1,6 +1,6 @@
 Param (
 	[Parameter(Mandatory=$false)]
-	[string]$Framework = 'net8.0',
+	[string]$Framework = 'net10.0',
 	[Parameter(Mandatory)]
 	[string]$version
 )
@@ -16,7 +16,7 @@ Function Publish-Proj
 
 	try
 	{
-		Push-Location "./$DirName"
+		Push-Location "./src/$DirName"
 		$publishDir = './bin/Publish'
 
 		foreach ($profile in $profiles) {
@@ -47,7 +47,7 @@ Function Publish-Proj
 	}
 }
 
-Publish-Proj 'MCeToJava'
+Publish-Proj 'MCeToJava.Cli'
 
 $publishDir = 'Publish'
 
@@ -64,7 +64,7 @@ foreach ($profile in $profiles) {
 	New-Item -Path $publishDir -Name $profile -ItemType "directory" -Force
 	$outDir = "./$publishDir/$profile"
 
-	Copy-Item -Path "./MCeToJava/bin/Publish/$profile/*" -Destination $outDir -Recurse
+	Copy-Item -Path "./src/MCeToJava.Cli/bin/Publish/$profile/*" -Destination $outDir -Recurse
 }
 
 Write-Host 'Compressing folders'

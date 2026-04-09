@@ -83,7 +83,8 @@ internal static class JsonNbtConverter
 			[EnumMember(Value = "string")]
 			STRING,
 		}
-
+		
+		[JsonIgnore]
 		public TagType Type { get; }
 	}
 

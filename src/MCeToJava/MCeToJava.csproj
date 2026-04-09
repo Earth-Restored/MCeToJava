@@ -6,8 +6,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -42,15 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Data\blocks_bedrock.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\blocks_java.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\blocks_java_nonvanilla.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="Data/blocks_bedrock.json" />
+    <EmbeddedResource Include="Data/blocks_java.json" />
+    <EmbeddedResource Include="Data/blocks_java_nonvanilla.json" />
   </ItemGroup>
 
 </Project>

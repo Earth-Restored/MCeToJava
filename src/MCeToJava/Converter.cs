@@ -17,6 +17,7 @@ using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -416,7 +417,13 @@ public static partial class Converter
 
 		string ReadFile(string fileName)
 		{
-			return File.ReadAllText(Path.Combine("Data", fileName));
+			string resourceName = $"MCeToJava.Data.{fileName}";
+			
+			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)!)
+			using (StreamReader reader = new StreamReader(stream))
+			{
+				return reader.ReadToEnd();
+			}
 		}
 	}
 
