@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace MCeToJava.Utils;
 
-internal static class JsonUtils
+public static class JsonUtils
 {
 	private static readonly JsonSerializerOptions DefaultJsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -21,6 +21,9 @@ internal static class JsonUtils
 
 	public static T? DeserializeJson<T>(ReadOnlySpan<char> json)
 		=> JsonSerializer.Deserialize<T>(json, DefaultJsonOptions);
+
+	public static async Task<T?> DeserializeJsonAsync<T>(Stream json)
+		=> await JsonSerializer.DeserializeAsync<T>(json, DefaultJsonOptions);
 
 	public static T? DeserializeJson<T>(ReadOnlySpan<byte> utf8Json)
 		=> JsonSerializer.Deserialize<T>(utf8Json, DefaultJsonOptions);
