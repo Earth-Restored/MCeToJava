@@ -7,4 +7,4 @@ using BitcoderCZ.Maths.Vectors;
 
 namespace MCeToJava.Models.MCE;
 
-internal record Entity(string Name, double3 Position, float2 Rotation, float3 ShadowPosition, float ShadowSize, int OverlayColor, int ChangeColor, int MultiplicitiveTintChangeColor, Dictionary<string, JsonNode>? ExtraData, string SkinData, bool IsPersonaSkin);
+internal sealed record Entity(string Name, double3 Position, float2 Rotation, float3 ShadowPosition, float ShadowSize, int OverlayColor, int ChangeColor, int MultiplicitiveTintChangeColor, Dictionary<string, JsonNode>? ExtraData, string SkinData, bool IsPersonaSkin);

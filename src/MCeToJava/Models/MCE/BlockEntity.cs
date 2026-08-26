@@ -7,4 +7,4 @@ using MCeToJava.NBT;
 
 namespace MCeToJava.Models.MCE;
 
-internal record BlockEntity(int Type, int3 Position, JsonNbtConverter.JsonNbtTag Data);
+internal sealed record BlockEntity(int Type, int3 Position, JsonNbtConverter.JsonNbtTag Data);

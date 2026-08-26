@@ -7,4 +7,8 @@ using BitcoderCZ.Maths.Vectors;
 
 namespace MCeToJava.Models.MCE;
 
-internal record SubChunk([property: JsonPropertyName("block_palette")] List<PaletteEntry> BlockPalette, int[] Blocks, int3 Position);
+internal sealed record SubChunk(
+    [property: JsonPropertyName("block_palette")] List<PaletteEntry> BlockPalette, 
+    int[] Blocks, 
+    int3 Position
+);

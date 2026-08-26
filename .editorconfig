@@ -23,8 +23,8 @@ csharp_style_expression_bodied_properties = true:warning
 csharp_style_expression_bodied_indexers = true:warning
 csharp_style_expression_bodied_accessors = true:warning
 csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
-dotnet_diagnostic.SA1600.severity = warning
-dotnet_diagnostic.SA1601.severity = warning
+dotnet_diagnostic.SA1600.severity = silent
+dotnet_diagnostic.SA1601.severity = silent
 dotnet_diagnostic.SA1602.severity = warning
 dotnet_diagnostic.SA1611.severity = warning
 csharp_style_expression_bodied_lambdas = true:silent
@@ -159,7 +159,7 @@ dotnet_style_operator_placement_when_wrapping = beginning_of_line
 tab_width = 4
 indent_size = 4
 end_of_line = lf
-dotnet_style_coalesce_expression = true:warning
+dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:warning
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:warning
 dotnet_style_prefer_auto_properties = true:silent
@@ -197,3 +197,6 @@ dotnet_diagnostic.CA2009.severity = warning
 dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
 dotnet_diagnostic.CA1859.severity = warning
 indent_style = tab
+
+# IDE0270: Use coalesce expression
+dotnet_diagnostic.IDE0270.severity = suggestion

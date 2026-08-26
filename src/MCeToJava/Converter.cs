@@ -10,7 +10,7 @@ using MCeToJava.Models.MCE;
 using MCeToJava.NBT;
 using MCeToJava.Registry;
 using MCeToJava.Utils;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using SharpNBT;
 using Spectre.Console;
 using System.Buffers.Binary;
@@ -41,7 +41,7 @@ public static partial class Converter
 
 	private static bool registryInitialized = false;
 
-	public static async Task<int> ConvertFiles(string[] files, string outDir, Options options)
+	public static async Task<int> ConvertFilesCli(string[] files, string outDir, Options options)
 	{
 		if (!Directory.Exists(outDir))
 		{
@@ -49,20 +49,20 @@ public static partial class Converter
 			{
 				Directory.CreateDirectory(outDir);
 			}
-			catch (Exception ex)
+			catch (Exception exception)
 			{
-				Log.Error($"Failed to create out-dir: {ex}");
+				options.Logger.LogError(exception, "Failed to create out-dir");
 				return ErrorCode.UnknownError;
 			}
 		}
 
 		try
 		{
-			InitRegistry(Log.Logger);
+			InitRegistry(options.Logger);
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			Log.Error($"Failed to initialize block registry: {ex}");
+			options.Logger.LogError(exception, "Failed to initialize block registry");
 			return ErrorCode.UnknownError;
 		}
 
@@ -150,13 +150,13 @@ public static partial class Converter
 
 		if (string.IsNullOrEmpty(inPath))
 		{
-			options.Logger.Error($"Invalid in-path '{inPath}'");
+			options.Logger.LogError("Invalid in-path '{InPath}'", inPath);
 			return Result.Fail(new ErrorCodeError($"Invalid in-path '{inPath}'", ErrorCode.CliParseError));
 		}
 
 		task?.StartTask();
 
-		options.Logger.Information($"Converting '{Path.GetFullPath(inPath)}'");
+		options.Logger.LogInformation("Converting '{InPath}'", Path.GetFullPath(inPath));
 
 		string buildplateText;
 		try
@@ -165,13 +165,13 @@ public static partial class Converter
 		}
 		catch (FileNotFoundException fileNotFound)
 		{
-			options.Logger.Error($"File '{fileNotFound.FileName}' wasn't found.");
+			options.Logger.LogError("File '{Path}' wasn't found", fileNotFound.FileName);
 			return Result.Fail(new ErrorCodeError($"File '{fileNotFound.FileName}' wasn't found", ErrorCode.FileNotFound).CausedBy(fileNotFound));
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			options.Logger.Error($"Failed to read input file: {ex}");
-			return Result.Fail(new ErrorCodeError($"Failed to read input file", ErrorCode.UnknownError).CausedBy(ex));
+			options.Logger.LogError(exception, "Failed to read input file");
+			return Result.Fail(new ErrorCodeError($"Failed to read input file", ErrorCode.UnknownError).CausedBy(exception));
 		}
 
 		task?.Increment(1);
@@ -186,10 +186,10 @@ public static partial class Converter
 				throw new ConvertException("Invalid json - null.");
 			}
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			options.Logger.Error($"Failed to parse input file: {ex}");
-			return Result.Fail(new ErrorCodeError($"Failed to parse input file", ErrorCode.UnknownError).CausedBy(ex));
+			options.Logger.LogError(exception, "Failed to parse input file");
+			return Result.Fail(new ErrorCodeError($"Failed to parse input file", ErrorCode.UnknownError).CausedBy(exception));
 		}
 
 		task?.Increment(1);
@@ -198,10 +198,10 @@ public static partial class Converter
 		{
 			InitRegistry(options.Logger);
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			options.Logger.Error($"Failed to initialize block registry: {ex}");
-			return Result.Fail(new ErrorCodeError($"Failed to initialize block registry", ErrorCode.UnknownError).CausedBy(ex));
+			options.Logger.LogError(exception, "Failed to initialize block registry");
+			return Result.Fail(new ErrorCodeError($"Failed to initialize block registry", ErrorCode.UnknownError).CausedBy(exception));
 		}
 
 		WorldData data;
@@ -209,13 +209,13 @@ public static partial class Converter
 		{
 			data = await Convert(buildplate, task, options).ConfigureAwait(false);
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			options.Logger.Error($"Failed to convert buildplate: {ex}");
-			return Result.Fail(new ErrorCodeError($"Failed to convert buildplate", ErrorCode.UnknownError).CausedBy(ex));
+			options.Logger.LogError(exception, "Failed to convert buildplate");
+			return Result.Fail(new ErrorCodeError($"Failed to convert buildplate", ErrorCode.UnknownError).CausedBy(exception));
 		}
 
-		options.Logger.Information($"Writing output zip");
+		options.Logger.LogInformation("Writing output zip");
 
 		try
 		{
@@ -224,15 +224,15 @@ public static partial class Converter
 				data.WriteToStream(fs);
 			}
 		}
-		catch (Exception ex)
+		catch (Exception exception)
 		{
-			options.Logger.Error($"Failed to write output file: {ex}");
-			return Result.Fail(new ErrorCodeError($"Failed to write output file", ErrorCode.UnknownError).CausedBy(ex));
+			options.Logger.LogError(exception, "Failed to write output file");
+			return Result.Fail(new ErrorCodeError($"Failed to write output file", ErrorCode.UnknownError).CausedBy(exception));
 		}
 
 		task?.Increment(1);
 
-		options.Logger.Information($"Done");
+		options.Logger.LogInformation("Done");
 
 		return Result.Ok();
 	}
@@ -251,19 +251,11 @@ public static partial class Converter
 
 		WorldData worldData = new WorldData();
 
-		int lowestY = CalculateLowestY(model);
-		if (lowestY == int.MaxValue)
-		{
-			options.Logger.Error($"Failed to calculate lowest y position.");
-		}
-		else
-		{
-			AddSolidAir(buildplate, model, lowestY);
-		}
+		AddSolidAir(buildplate, model);
 
 		task?.Increment(1);
 
-		options.Logger.Information($"Writing chunks");
+		options.Logger.LogInformation("Writing chunks");
 		Dictionary<int2, BlockChunk> blockChunks = [];
 		Dictionary<int2, EntityChunk> entityChunks = [];
 
@@ -316,7 +308,7 @@ public static partial class Converter
 
 				if (jsonMap is null)
 				{
-					options.Logger.Warning($"Invalid block entity: Data wasn't compound tag.");
+					options.Logger.LogWarning("Invalid block entity: Data wasn't compound tag");
 					continue;
 				}
 
@@ -324,28 +316,28 @@ public static partial class Converter
 
 				if (!map.TryGetValue("x", out var xTag) || !map.TryGetValue("y", out var yTag) || !map.TryGetValue("z", out var zTag) || !map.TryGetValue("id", out var idTag))
 				{
-					options.Logger.Warning($"Invalid block entity: Missing x, y, z or id tag(s).");
+					options.Logger.LogWarning("Invalid block entity: Missing x, y, z or id tag(s)");
 					continue;
 				}
 
 				if (xTag is not JsonNbtConverter.IntJsonNbtTag xInt || blockEntity.Position.X != xInt.Value)
 				{
-					options.Logger.Warning($"Invalid block entity: x tags's value doesn't match x position.");
+					options.Logger.LogWarning("Invalid block entity: x tags's value doesn't match x position");
 					continue;
 				}
 				else if (yTag is not JsonNbtConverter.IntJsonNbtTag yInt || blockEntity.Position.Y != yInt.Value)
 				{
-					options.Logger.Warning($"Invalid block entity: y tags's value doesn't match y position.");
+					options.Logger.LogWarning("Invalid block entity: y tags's value doesn't match y position");
 					continue;
 				}
 				else if (zTag is not JsonNbtConverter.IntJsonNbtTag zInt || blockEntity.Position.Z != zInt.Value)
 				{
-					options.Logger.Warning($"Invalid block entity: z tags's value doesn't match z position.");
+					options.Logger.LogWarning("Invalid block entity: z tags's value doesn't match z position");
 					continue;
 				}
 				else if (idTag is not JsonNbtConverter.StringJsonNbtTag)
 				{
-					options.Logger.Warning($"Invalid block entity: id tags's value must be a string.");
+					options.Logger.LogWarning("Invalid block entity: id tags's value must be a string");
 					continue;
 				}
 
@@ -360,7 +352,7 @@ public static partial class Converter
 			}
 		}
 
-		options.Logger.Information($"Converting blocks");
+		options.Logger.LogInformation("Converting blocks");
 		foreach (var (pos, chunk) in blockChunks)
 		{
 			worldData.AddNBTToRegion(pos.X, pos.Y, "region", chunk.ToTag(options.Biome, true, options.Logger));
@@ -368,7 +360,7 @@ public static partial class Converter
 
 		task?.Increment(1);
 
-		options.Logger.Information($"Converting entities");
+		options.Logger.LogInformation("Converting entities");
 		foreach (var (pos, chunk) in entityChunks)
 		{
 			worldData.AddNBTToRegion(pos.X, pos.Y, "entities", chunk.ToTag(options.ConvertTarget, options.Logger));
@@ -376,7 +368,7 @@ public static partial class Converter
 
 		task?.Increment(1);
 
-		options.Logger.Information($"Filling region files with empty chunks");
+		options.Logger.LogInformation("Filling region files with empty chunks");
 		await FillWithAirChunks(worldData, task, buildplate.Offset.Y, options.Biome, options.Logger).ConfigureAwait(false);
 
 		switch (options.ConvertTarget)
@@ -404,21 +396,22 @@ public static partial class Converter
 			return;
 		}
 
-		logger.Information("[registry] Initializing");
-		BedrockBlocks.Load(JsonSerializer.Deserialize<JsonArray>(ReadFile("blocks_bedrock.json"))!);
+		logger.LogInformation("[registry] Initializing");
+		BedrockBlocks.Load(JsonSerializer.Deserialize<JsonArray>(ReadFile("blocks_bedrock.json"))!, logger);
 
 		JavaBlocks.Load(
 			JsonSerializer.Deserialize<JsonArray>(ReadFile("blocks_java.json"))!,
-			JsonSerializer.Deserialize<JsonArray>(ReadFile("blocks_java_nonvanilla.json"))!);
+			JsonSerializer.Deserialize<JsonArray>(ReadFile("blocks_java_nonvanilla.json"))!,
+			logger);
 
-		logger.Information("[registry] Initialization finished");
+		logger.LogInformation("[registry] Initialization finished");
 
 		registryInitialized = true;
 
 		string ReadFile(string fileName)
 		{
 			string resourceName = $"MCeToJava.Data.{fileName}";
-			
+
 			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)!)
 			using (StreamReader reader = new StreamReader(stream))
 			{
@@ -432,71 +425,160 @@ public static partial class Converter
 
 	private static int CalculateLowestY(BuildplateModel model)
 	{
-		int lowestY = int.MaxValue;
 		int lowestChunkY = model.SubChunks.Min(chunk => chunk.Position.Y);
-		foreach (var subChunk in model.SubChunks.Where(chunk => chunk.Position.Y == lowestChunkY))
+		int lowestY = CalculateLowestYImpl(model.SubChunks.Where(chunk => chunk.Position.Y == lowestChunkY));
+
+		if (lowestY is int.MaxValue)
 		{
-			int[] blocks = subChunk.Blocks;
-			List<PaletteEntry> palette = subChunk.BlockPalette;
+			lowestY = CalculateLowestYImpl(model.SubChunks); // try with all subchunks
+		}
 
-			int yOffset = subChunk.Position.Y * 16;
+		return lowestY;
 
-			for (int y = 0; y < 16; y++)
+		static int CalculateLowestYImpl(IEnumerable<SubChunk> subChunks)
+		{
+			int lowestY = int.MaxValue;
+			foreach (var subChunk in subChunks)
 			{
-				for (int x = 0; x < 16; x++)
+				int[] blocks = subChunk.Blocks;
+				List<PaletteEntry> palette = subChunk.BlockPalette;
+
+				int yOffset = subChunk.Position.Y * 16;
+
+				for (int y = 0; y < 16; y++)
+				{
+					for (int x = 0; x < 16; x++)
+					{
+						for (int z = 0; z < 16; z++)
+						{
+							int paletteIndex = blocks[(((x * 16) + y) * 16) + z];
+							var paletteEntry = palette[paletteIndex];
+
+							switch (paletteEntry.Name)
+							{
+								case "minecraft:air":
+								case "minecraft:invisible_constraint":
+									break;
+								default:
+									if (y + yOffset < lowestY)
+									{
+										lowestY = y + yOffset;
+										goto next;
+									}
+									else
+									{
+										goto next;
+									}
+							}
+						}
+					}
+				}
+
+			next:;
+			}
+
+			return lowestY;
+		}
+	}
+
+	private static (int2 MinBorder, int2 MaxBorder, int2 MinAny, int2 MaxAny, int LowestY) CalculateBounds(BuildplateModel model)
+	{
+		int2 minBorderPos = new int2(int.MaxValue);
+		int2 maxBorderPos = new int2(int.MinValue);
+		int2 minAnyPos = new int2(int.MaxValue);
+		int2 maxAnyPos = new int2(int.MinValue);
+		int lowestY = int.MaxValue;
+
+		foreach (var subChunk in model.SubChunks)
+		{
+			int borderBlockIndex = -1;
+			int airBlockIndex = -1;
+
+			for (int i = 0; i < subChunk.BlockPalette.Count; i++)
+			{
+				string name = subChunk.BlockPalette[i].Name;
+				if (name is "minecraft:border_constraint")
+				{
+					borderBlockIndex = i;
+				}
+				else if (name is "minecraft:air")
+				{
+					airBlockIndex = i;
+				}
+			}
+
+			int worldBaseX = subChunk.Position.X * 16;
+			int worldBaseY = subChunk.Position.Y * 16;
+			int worldBaseZ = subChunk.Position.Z * 16;
+
+			for (int x = 0; x < 16; x++)
+			{
+				for (int y = 0; y < 16; y++)
 				{
 					for (int z = 0; z < 16; z++)
 					{
-						int paletteIndex = blocks[(((x * 16) + y) * 16) + z];
-						var paletteEntry = palette[paletteIndex];
+						int index = subChunk.Blocks[(((x * 16) + y) * 16) + z];
 
-						switch (paletteEntry.Name)
+						if (airBlockIndex == -1 || index != airBlockIndex)
 						{
-							case "minecraft:air":
-							case "minecraft:invisible_constraint":
-								break;
-							default:
-								if (y + yOffset < lowestY)
-								{
-									lowestY = y + yOffset;
-									goto next;
-								}
-								else
-								{
-									goto next;
-								}
+							var pos = new int2(worldBaseX + x, worldBaseZ + z);
+
+							minAnyPos = int2.Min(minAnyPos, pos);
+							maxAnyPos = int2.Max(maxAnyPos, pos);
+							lowestY = int.Min(lowestY, worldBaseY + y);
+						}
+
+						if (borderBlockIndex != -1 && index == borderBlockIndex)
+						{
+							var pos = new int2(worldBaseX + x, worldBaseZ + z);
+
+							minBorderPos = int2.Min(minBorderPos, pos);
+							maxBorderPos = int2.Max(maxBorderPos, pos);
 						}
 					}
 				}
 			}
-
-		next:;
 		}
 
-		return lowestY;
+		return minBorderPos.X == int.MaxValue || minAnyPos.X == int.MaxValue
+			? throw new Exception("Could not calculate buildplate bounds")
+			: (minBorderPos, maxBorderPos, minAnyPos, maxAnyPos, lowestY);
 	}
 
-	private static void AddSolidAir(Buildplate buildplate, BuildplateModel model, int lowestY)
+	private static void AddSolidAir(Buildplate buildplate, BuildplateModel model)
 	{
 		int surfaceY = buildplate.Offset.Y - 1;
-		int xOffset = (buildplate.Dimension.X / 2) + 1;
-		int zOffset = (buildplate.Dimension.Z / 2) + 1;
+
+		var (minBorder, maxBorder, minAny, maxAny, lowestY) = CalculateBounds(model);
 
 		int minX = ChunkToMinBlock(model.SubChunks.Min(chunk => chunk.Position.X));
 		int maxX = ChunkToMaxBlock(model.SubChunks.Max(chunk => chunk.Position.X));
 		int minY = ChunkToMinBlock(model.SubChunks.Min(chunk => chunk.Position.Y));
+		int maxY = ChunkToMaxBlock(model.SubChunks.Max(chunk => chunk.Position.Y));
 		int minZ = ChunkToMinBlock(model.SubChunks.Min(chunk => chunk.Position.Z));
 		int maxZ = ChunkToMaxBlock(model.SubChunks.Max(chunk => chunk.Position.Z));
 
-		Fill(new int3(minX, minY, minZ), new int3(maxX, lowestY - 2, maxZ), 0, "fountain:solid_air");
+		Fill(new int3(minX, minY, minZ), new int3(maxX, lowestY - 1, maxZ), 0, "fountain:solid_air");
 
-		Fill(new int3(minX, lowestY - 1, minZ), new int3(maxX, surfaceY, -zOffset - 4), 0, "fountain:solid_air");
-		Fill(new int3(minX, lowestY - 1, zOffset + 3), new int3(maxX, surfaceY, maxZ), 0, "fountain:solid_air");
-		Fill(new int3(minX, lowestY - 1, minZ), new int3(-xOffset - 4, surfaceY, maxZ), 0, "fountain:solid_air");
-		Fill(new int3(xOffset + 3, lowestY - 1, minZ), new int3(maxX, surfaceY, maxZ), 0, "fountain:solid_air");
+		FillOutside(lowestY, surfaceY - 1, minAny, maxAny, replaceOnlyAir: false);
 
-		void Fill(int3 from, int3 to, ushort data, string name)
+		FillOutside(surfaceY, surfaceY, minBorder, maxBorder, replaceOnlyAir: true);
+
+		void FillOutside(int yFrom, int yTo, int2 minBound, int2 maxBound, bool replaceOnlyAir)
 		{
+			Fill(new int3(minX, yFrom, minZ), new int3(maxX, yTo, minBound.Y - 1), 0, "fountain:solid_air", replaceOnlyAir);
+			Fill(new int3(minX, yFrom, maxBound.Y + 1), new int3(maxX, yTo, maxZ), 0, "fountain:solid_air", replaceOnlyAir);
+			Fill(new int3(minX, yFrom, minBound.Y), new int3(minBound.X - 1, yTo, maxBound.Y), 0, "fountain:solid_air", replaceOnlyAir);
+			Fill(new int3(maxBound.X + 1, yFrom, minBound.Y), new int3(maxX, yTo, maxBound.Y), 0, "fountain:solid_air", replaceOnlyAir);
+		}
+
+		void Fill(int3 from, int3 to, ushort data, string name, bool replaceOnlyAir = false)
+		{
+			if (from.X > to.X || from.Y > to.Y || from.Z > to.Z)
+			{
+				return;
+			}
+
 			int3 fromChunk = ChunkDivVec(from, 16);
 			int3 toChunk = ChunkDivVec(to, 16);
 
@@ -535,7 +617,18 @@ public static partial class Converter
 							{
 								for (int z = chunkPos.Z == fromChunk.Z ? fromInChunk.Z : 0; z <= zMax; z++)
 								{
-									chunk.Blocks[(((x * 16) + y) * 16) + z] = index;
+									int blockIndex = (((x * 16) + y) * 16) + z;
+
+									if (replaceOnlyAir)
+									{
+										int currentPaletteIdx = chunk.Blocks[blockIndex];
+										if (chunk.BlockPalette[currentPaletteIdx].Name is not "minecraft:air")
+										{
+											continue;
+										}
+									}
+
+									chunk.Blocks[blockIndex] = index;
 								}
 							}
 						}

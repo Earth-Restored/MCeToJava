@@ -5,6 +5,7 @@
 using CommandLineParser.Attributes;
 using CommandLineParser.Commands;
 using MCeToJava.Models;
+using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Core;
 
@@ -56,9 +57,9 @@ internal sealed class ConvertDirCommand : ConsoleCommand
 				return ErrorCode.Success;
 			}
 
-			var options = new Converter.Options(Logger.None, ConvertTarget, Biome, WorldName);
+			var options = new Converter.Options(NullLogger.Instance, ConvertTarget, Biome, WorldName);
 
-			return Converter.ConvertFiles(files, OutDir, options).ConfigureAwait(false).GetAwaiter().GetResult();
+			return Converter.ConvertFilesCli(files, OutDir, options).ConfigureAwait(false).GetAwaiter().GetResult();
 		}
 		catch (Exception ex)
 		{

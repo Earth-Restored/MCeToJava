@@ -8,7 +8,9 @@ using CommandLineParser.Commands;
 using FluentResults;
 using MCeToJava.Exceptions;
 using MCeToJava.Models;
+using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace MCeToJava.Cli.CliCommands;
 
@@ -41,7 +43,9 @@ internal sealed class ConvertCommand : ConsoleCommand
 	{
 		try
 		{
-			Result result = Converter.ConvertFile(InPath, OutPath, null, new Converter.Options(Log.Logger, ConvertTarget, Biome, WorldName)).ConfigureAwait(false).GetAwaiter().GetResult();
+			using var loggerFactory = new SerilogLoggerFactory(Log.Logger);
+
+			Result result = Converter.ConvertFile(InPath, OutPath, null, new Converter.Options(loggerFactory.CreateLogger(nameof(Converter)), ConvertTarget, Biome, WorldName)).ConfigureAwait(false).GetAwaiter().GetResult();
 
 			return result.IsSuccess
 				? ErrorCode.Success

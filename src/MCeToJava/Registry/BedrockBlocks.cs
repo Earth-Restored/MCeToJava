@@ -4,7 +4,7 @@
 
 using MCeToJava.NBT;
 using MCeToJava.Utils;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -21,7 +21,7 @@ internal static class BedrockBlocks
 
 	public static int WaterId { get; private set; }
 
-	public static void Load(JsonArray root)
+	public static void Load(JsonArray root, ILogger logger)
 	{
 		foreach (var element in root)
 		{
@@ -43,14 +43,14 @@ internal static class BedrockBlocks
 			BlockNameAndState blockNameAndState = new BlockNameAndState(name, state);
 			if (!StateToIdMap.TryAdd(blockNameAndState, id))
 			{
-				Log.Warning($"[registry] Duplicate Bedrock block name/state {name}");
+				logger.LogWarning("[registry] Duplicate Bedrock block name/state '{Name}'", name);
 			}
 
 			NameToId.TryAdd(name, id);
 
 			if (!IdToStateMap.TryAdd(id, blockNameAndState))
 			{
-				Log.Warning($"[registry] Duplicate Bedrock block ID {id}");
+				logger.LogWarning("[registry] Duplicate Bedrock block ID '{Id}'", id);
 			}
 		}
 

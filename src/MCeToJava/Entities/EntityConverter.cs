@@ -6,7 +6,7 @@ using BitcoderCZ.Maths.Vectors;
 using MCeToJava.Models;
 using MCeToJava.Models.MCE;
 using MCeToJava.Utils;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using SharpNBT;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
@@ -202,7 +202,7 @@ internal static partial class EntityConverter
 
 		if (!EntityInfo.Info.TryGetValue(javaName, out var info))
 		{
-			logger.Warning($"No info defined for entity '{entity.Name}'.");
+			logger.LogWarning("No info defined for entity '{EntityName}'", entity.Name);
 			return null;
 		}
 

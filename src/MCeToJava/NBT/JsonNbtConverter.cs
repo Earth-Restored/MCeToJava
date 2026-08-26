@@ -10,6 +10,25 @@ namespace MCeToJava.NBT;
 
 internal static class JsonNbtConverter
 {
+	[JsonConverter(typeof(JsonStringEnumConverter))]
+	public enum TagType
+	{
+		[EnumMember(Value = "compound")]
+		COMPOUND,
+		[EnumMember(Value = "list")]
+		LIST,
+		[EnumMember(Value = "int")]
+		INT,
+		[EnumMember(Value = "byte")]
+		BYTE,
+		[EnumMember(Value = "short")]
+		SHORT,
+		[EnumMember(Value = "float")]
+		FLOAT,
+		[EnumMember(Value = "string")]
+		STRING,
+	}
+
 	public static NbtMap Convert(CompoundJsonNbtTag tag)
 	{
 		Dictionary<string, object> value = [];
@@ -62,30 +81,11 @@ internal static class JsonNbtConverter
 	{
 		protected JsonNbtTag(TagType type)
 		{
-			Type = type;
+			TagType = type;
 		}
 
-		[JsonConverter(typeof(JsonStringEnumConverter))]
-		public enum TagType
-		{
-			[EnumMember(Value = "compound")]
-			COMPOUND,
-			[EnumMember(Value = "list")]
-			LIST,
-			[EnumMember(Value = "int")]
-			INT,
-			[EnumMember(Value = "byte")]
-			BYTE,
-			[EnumMember(Value = "short")]
-			SHORT,
-			[EnumMember(Value = "float")]
-			FLOAT,
-			[EnumMember(Value = "string")]
-			STRING,
-		}
-		
 		[JsonIgnore]
-		public TagType Type { get; }
+		public TagType TagType { get; }
 	}
 
 	public sealed class CompoundJsonNbtTag : JsonNbtTag

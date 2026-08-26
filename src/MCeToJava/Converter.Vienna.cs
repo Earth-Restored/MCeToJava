@@ -6,6 +6,7 @@ using BitcoderCZ.Maths.Vectors;
 using MCeToJava.Models.MCE;
 using MCeToJava.Models.Vienna;
 using MCeToJava.Utils;
+using Microsoft.Extensions.Logging;
 using System.Buffers;
 using System.Text;
 
@@ -17,7 +18,7 @@ public static partial class Converter
 	{
 		public static void AddViennaFiles(WorldData worldData, Buildplate buildplate, bool night, Options options)
 		{
-			options.Logger.Information($"Creating buildplate_metadata.json");
+			options.Logger.LogInformation("Creating buildplate_metadata.json");
 
 			worldData.Files.Add("buildplate_metadata.json", Encoding.UTF8.GetBytes(JsonUtils.SerializeJson(new BuildplateMetadata(
 				1,

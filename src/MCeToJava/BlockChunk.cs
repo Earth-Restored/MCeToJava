@@ -5,7 +5,7 @@
 using MCeToJava.NBT;
 using MCeToJava.Registry;
 using MCeToJava.Utils;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using SharpNBT;
 using System.Diagnostics;
 
@@ -282,13 +282,13 @@ internal sealed class BlockChunk
 
 		bool Contains(string name)
 		{
-			bool c = blockEntity.ContainsKey(name);
-			if (!c)
+			bool hasEntity = blockEntity.ContainsKey(name);
+			if (!hasEntity)
 			{
-				logger.Warning($"Invalid block entity: Doesn't contain '{name}'.");
+				logger.LogWarning("Invalid block entity: Doesn't contain '{Name}'", name);
 			}
 
-			return c;
+			return hasEntity;
 		}
 	}
 

@@ -3,7 +3,7 @@
 // </copyright>
 
 using MCeToJava.NBT;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -19,7 +19,7 @@ internal static class JavaBlocks
 
 	private static readonly Dictionary<int, BedrockMapping> BedrockIdToBedrockMapping = [];
 
-	public static void Load(JsonArray vanillaRoot, JsonArray nonvanillaRoot)
+	public static void Load(JsonArray vanillaRoot, JsonArray nonvanillaRoot, ILogger logger)
 	{
 		foreach (var item in vanillaRoot)
 		{
@@ -29,7 +29,7 @@ internal static class JavaBlocks
 
 			if (!JavaIdToNameAndState.TryAdd(id, nameAndState))
 			{
-				Log.Warning($"[registry] Duplicate Java block ID {id}");
+				logger.LogWarning("[registry] Duplicate Java block ID '{Id}l", id);
 			}
 
 			try
@@ -46,9 +46,9 @@ internal static class JavaBlocks
 				int bracketIndex = nameAndState.IndexOf('[');
 				NameToDefaultNameAndState.TryAdd(bracketIndex == -1 ? nameAndState : nameAndState[..bracketIndex], nameAndState);
 			}
-			catch (BedrockMappingFailException ex)
+			catch (BedrockMappingFailException exception)
 			{
-				Log.Warning($"[registry] Cannot find Bedrock block for Java block {nameAndState}: {ex}");
+				logger.LogWarning(exception, "[registry] Cannot find Bedrock block for Java block '{NameAndState}'", nameAndState);
 			}
 		}
 
@@ -84,9 +84,9 @@ internal static class JavaBlocks
 					int bracketIndex = name.IndexOf('[');
 					NameToDefaultNameAndState.TryAdd(bracketIndex == -1 ? name : name[..bracketIndex], name);
 				}
-				catch (BedrockMappingFailException ex)
+				catch (BedrockMappingFailException exception)
 				{
-					Log.Warning($"[registry] Cannot find Bedrock block for Java block {name}: {ex}");
+					logger.LogWarning(exception, "[registry] Cannot find Bedrock block for Java block '{Name}'", name);
 				}
 			}
 		}

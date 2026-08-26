@@ -3,6 +3,7 @@
 // </copyright>
 
 using MCeToJava.Utils;
+using Microsoft.Extensions.Logging;
 using SharpNBT;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -15,7 +16,7 @@ public static partial class Converter
 	{
 		public static void AddJavaFiles(WorldData worldData, bool night, Options options)
 		{
-			options.Logger.Information($"Creating level.dat");
+			options.Logger.LogInformation("Creating level.dat");
 
 			using (MemoryStream ms = new MemoryStream())
 			using (GZipStream gzs = new GZipStream(ms, CompressionLevel.Optimal))
