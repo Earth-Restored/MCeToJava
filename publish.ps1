@@ -21,18 +21,23 @@ Function Publish-Proj
 		$publishDir = './bin/Publish'
 
 		foreach ($publishProfile in $profiles) {
+			$profilePublishDir = Join-Path $publishDir $publishProfile
+			if (Test-Path -LiteralPath $profilePublishDir) {
+				Remove-Item -LiteralPath $profilePublishDir -Recurse -Force
+			}
+
 			Write-Host "Publishing $publishProfile"
 			if ($publishProfile -eq 'framework-dependent') {
 				Write-Host "Publishing $DirName framework dependent"
-				dotnet publish -o "$publishDir/$publishProfile/" --no-self-contained -c 'Release' -f $Framework -p:PublishSingleFile=false
+				dotnet publish -o "$profilePublishDir/" --no-self-contained -c 'Release' -f $Framework -p:PublishSingleFile=false
 			}
 			elseif ($publishProfile -like 'framework-dependent-*') {
 				Write-Host "Publishing $DirName framework dependent specific"
-				dotnet publish -o "$publishDir/$publishProfile/" --no-self-contained -c 'Release' -f $Framework -r $publishProfile.Substring('framework-dependent-'.Length) -p:PublishSingleFile=false
+				dotnet publish -o "$profilePublishDir/" --no-self-contained -c 'Release' -f $Framework -r $publishProfile.Substring('framework-dependent-'.Length) -p:PublishSingleFile=false
 			}
 			else {
 				Write-Host "Publishing $DirName self contained partially trimmed"
-				dotnet publish -o "$publishDir/$publishProfile/" --sc -c 'Release' -f $Framework -r $publishProfile -p:PublishTrimmed=true -p:TrimMode=partial
+				dotnet publish -o "$profilePublishDir/" --sc -c 'Release' -f $Framework -r $publishProfile -p:PublishTrimmed=true -p:TrimMode=partial
 			}
 		}
 

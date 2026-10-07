@@ -85,30 +85,43 @@ public static partial class Converter
 				{
 					await semaphore.WaitAsync().ConfigureAwait(false);
 
-					string fileName = Path.GetFileName(path);
-					if (string.IsNullOrWhiteSpace(fileName) || fileName.Length == 0)
+					try
 					{
-						failedFiles.Add((path, Result.Fail(new ErrorCodeError($"Invalid file name '{fileName}'.", ErrorCode.UnknownError))));
+						string fileName = Path.GetFileName(path);
+						if (string.IsNullOrWhiteSpace(fileName) || fileName.Length == 0)
+						{
+							failedFiles.Add((path, Result.Fail(new ErrorCodeError($"Invalid file name '{fileName}'.", ErrorCode.UnknownError))));
 
+							filesTask.Increment(1);
+							return;
+						}
+
+						var task = ctx.AddTaskBefore(fileName, filesTask, autoStart: false, maxValue: NumbProgressStages);
+
+						Result result;
+						try
+						{
+							result = await ConvertFile(path, Path.Combine(outDir, fileName + ".zip"), task, options).ConfigureAwait(false);
+						}
+						catch (Exception exception)
+						{
+							options.Logger.LogError(exception, "Failed to convert '{Path}'", path);
+							result = Result.Fail(new ErrorCodeError($"Failed to convert '{path}'.", ErrorCode.UnknownError).CausedBy(exception));
+						}
+
+						if (result.IsFailed)
+						{
+							failedFiles.Add((path, result));
+						}
+
+						task.Value = task.MaxValue;
+						task.StopTask();
 						filesTask.Increment(1);
-						semaphore.Release();
-						return;
 					}
-
-					var task = ctx.AddTaskBefore(fileName, filesTask, autoStart: false, maxValue: NumbProgressStages);
-
-					Result result = await ConvertFile(path, Path.Combine(outDir, fileName + ".zip"), task, options).ConfigureAwait(false);
-
-					if (result.IsFailed)
+					finally
 					{
-						failedFiles.Add((path, result));
+						semaphore.Release();
 					}
-
-					task.Value = task.MaxValue;
-					task.StopTask();
-					filesTask.Increment(1);
-
-					semaphore.Release();
 				})).ConfigureAwait(false);
 			});
 
@@ -152,6 +165,15 @@ public static partial class Converter
 		{
 			options.Logger.LogError("Invalid in-path '{InPath}'", inPath);
 			return Result.Fail(new ErrorCodeError($"Invalid in-path '{inPath}'", ErrorCode.CliParseError));
+		}
+
+		if (!Path.IsPathRooted(inPath) && !File.Exists(inPath))
+		{
+			string executableRelativePath = Path.Combine(AppContext.BaseDirectory, inPath);
+			if (File.Exists(executableRelativePath))
+			{
+				inPath = executableRelativePath;
+			}
 		}
 
 		task?.StartTask();

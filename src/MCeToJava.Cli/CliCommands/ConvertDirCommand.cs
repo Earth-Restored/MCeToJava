@@ -43,7 +43,17 @@ internal sealed class ConvertDirCommand : ConsoleCommand
 			string[] files;
 			try
 			{
-				files = Directory.GetFiles(InDir);
+				string inputDirectory = InDir;
+				if (!Path.IsPathRooted(inputDirectory) && !Directory.Exists(inputDirectory))
+				{
+					string executableRelativePath = Path.Combine(AppContext.BaseDirectory, inputDirectory);
+					if (Directory.Exists(executableRelativePath))
+					{
+						inputDirectory = executableRelativePath;
+					}
+				}
+
+				files = Directory.GetFiles(inputDirectory);
 			}
 			catch (Exception ex)
 			{
